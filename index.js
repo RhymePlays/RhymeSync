@@ -1,5 +1,4 @@
-let { Server } = require("socket.io")
-// import { Server } from "socket.io"
+let { Server } = require("socket.io") // import { Server } from "socket.io"
 
 // Variables
 var activeSockets = []
