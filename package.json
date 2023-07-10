@@ -1,6 +1,6 @@
 {
   "name": "rhymesync",
-  "version": "2022.7.1",
+  "version": "2023.7.1",
   "description": "An all-purpose Real-Time server for my projects.",
   "main": "index.js",
   "scripts": {
