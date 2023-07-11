@@ -1,0 +1,30 @@
+{
+  "name": "rhymesync-client",
+  "version": "2023.7.1",
+  "description": "Client for rhymeSync, the all-purpose Real-Time server for my projects.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RhymePlays/RhymeSync.git"
+  },
+  "keywords": [
+    "server",
+    "real",
+    "time",
+    "realtime",
+    "client",
+    "rhymesync"
+  ],
+  "author": "Isfar Tausif",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RhymePlays/RhymeSync/issues"
+  },
+  "homepage": "https://github.com/RhymePlays/RhymeSync#readme",
+  "dependencies": {
+    "socket.io-client": "^4.7.1"
+  }
+}
