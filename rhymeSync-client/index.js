@@ -39,7 +39,7 @@ class RhymeSyncClient {
         this.socketObj.on("readyToIdentify", ()=>{
             if (typeof(this.group)=='string'){
                 if (this.group.length < 33 && this.group.length > 0){
-                    this.send("identification", {subject: "identifyClient", data: this.group});
+                    this.send("identification", {data: this.group});
                     if (typeof(this.onIdentifyCallback)=="function"){this.onIdentifyCallback();}
                 }
             }
@@ -67,7 +67,6 @@ class RhymeSyncClient {
     \*---------    ---------*/
     getServerStatus(){this.send("getServerStatus", {});}
     getAllActiveSockets(){this.send("getAllActiveSockets", {serverAccessPassword: this.serverAccessPassword});}
-    getAllLowMemoryAidSockets(){this.send("getAllLowMemoryAidSockets", {})}
     getAllGroups(){this.send("getAllGroups", {serverAccessPassword: this.serverAccessPassword});}
     getAllClientsInGroup(group){this.send("getAllClientsInGroup", {group: group});}
     getGroupOfClient(clientID){this.send("getGroupOfClient", {clientID: clientID, serverAccessPassword: this.serverAccessPassword});}
@@ -78,12 +77,7 @@ class RhymeSyncClient {
     \*---------    ---------*/
     sendDataToSpecificClient(toID, subject, data){this.send("sendDataToSpecificClient", {toID: toID, subject: subject, data: data});}
     sendDataToAllInGroup(group, subject, data){this.send("sendDataToAllInGroup", {group: group, subject: subject, data: data});}
-    sendDataToAllLowMemoryAidSockets(subject, data){this.send("sendDataToAllLowMemoryAidSockets", {subject: subject, data: data});}
     sendDataToAll(subject, data){this.send("sendDataToAll", {subject: subject, data: data});}
 }
-
-// class LowMemoryAid extends rhymeSyncClient{
-
-// }
 
 module.exports = RhymeSyncClient

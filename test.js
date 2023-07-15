@@ -37,11 +37,6 @@ setTimeout(()=>{
 }, 1500);
 
 setTimeout(()=>{
-    console.log("\ngetAllLowMemoryAidSockets");
-    rhymeSync.getAllLowMemoryAidSockets();
-}, 2500);
-
-setTimeout(()=>{
     console.log("\ngetAllGroups");
     rhymeSync.getAllGroups();
 }, 3500);
@@ -59,11 +54,6 @@ setTimeout(()=>{
 }, 7500);
 
 setTimeout(()=>{
-    console.log("\nsendDataToAllLowMemoryAidSockets");
-    rhymeSync.sendDataToAllLowMemoryAidSockets("toAllLowMemoryAidSocketsTest", "SUCCESS!! 3");
-}, 8500);
-
-setTimeout(()=>{
     console.log("\nsendDataToAll");
-    rhymeSync.sendDataToAll("toAllTest", "SUCCESS!! 4");
+    rhymeSync.sendDataToAll("toAllTest", "SUCCESS!! 3");
 }, 9500);

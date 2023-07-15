@@ -6,12 +6,10 @@ let { Server } = require("socket.io");
 \*---------*/
 const serverPort = 80;
 const serverAccessPassword = "SIMPLE_NONHASHED_PASSWORD_HERE";
-const LOW_MEMORY = false;
 
 var activeSockets = [];
 var sockets2Groups = {};
 var groups2Sockets = {};
-var lowMemoryAidSockets = [];
 
 
 /*-----------*\
@@ -33,14 +31,6 @@ function sendToAll(fromID, subject, data){
     for (index in activeSockets){
         if (activeSockets[index] != fromID){ // Won't send the data back to the client it got it from to avoid looping
             send(fromID, activeSockets[index], subject, data);
-        }
-    }
-}
-
-function sendToAllLowMemoryAidSockets(fromID, subject, data){
-    for (index in lowMemoryAidSockets){
-        if (lowMemoryAidSockets[index] != fromID){
-            send(fromID, lowMemoryAidSockets[index], subject, data);
         }
     }
 }
@@ -108,19 +98,10 @@ io.on("connection", (socketObj)=>{
         // Remove from activeSockets ---
         activeSockets.splice(activeSockets.indexOf(socketObj.id), 1);
         
-        // Remove from lowMemoryAidSockets ---
-        if (lowMemoryAidSockets.includes(socketObj.id)){lowMemoryAidSockets.splice(lowMemoryAidSockets.indexOf(socketObj.id), 1);}
-        
         // Remove from Groups ---
-        else{
-            if (LOW_MEMORY){
-                sendToAllLowMemoryAidSockets("server", "clientDisconnected", {client: socketObj.id});
-            }else{
-                if (socketObj.id in sockets2Groups){
-                    groups2Sockets[sockets2Groups[socketObj.id]].splice(groups2Sockets[sockets2Groups[socketObj.id]].indexOf(socketObj.id), 1);
-                    delete sockets2Groups[socketObj.id];
-                }
-            }
+        if (socketObj.id in sockets2Groups){
+            groups2Sockets[sockets2Groups[socketObj.id]].splice(groups2Sockets[sockets2Groups[socketObj.id]].indexOf(socketObj.id), 1);
+            delete sockets2Groups[socketObj.id];
         }
     });
     
@@ -129,23 +110,14 @@ io.on("connection", (socketObj)=>{
     socketObj.on("identification", (arg)=>{ // --- REQ {subject: X, data: Y}}
         
         // Add to Groups ---
-        if (arg.subject == "identifyClient" && typeof(arg.data) == 'string') {
+        if (typeof(arg.data) == 'string') {
             if (arg.data.length < 33 && arg.data.length > 0){
-                if (LOW_MEMORY){
-                    sendToAllLowMemoryAidSockets("server", "clientIdentified", {client: socketObj.id, group: arg.data});
-                }else{
-                    if (arg.data in groups2Sockets){groups2Sockets[arg.data].push(socketObj.id);}
-                    else {groups2Sockets[arg.data]=[socketObj.id];}
-                    sockets2Groups[socketObj.id] = arg.data;
-                }
+                if (arg.data in groups2Sockets){groups2Sockets[arg.data].push(socketObj.id);}
+                else {groups2Sockets[arg.data]=[socketObj.id];}
+                sockets2Groups[socketObj.id] = arg.data;
             }
         }
         
-        // Add to lowMemoryAidSockets
-        else if (arg.subject == "identifyLowMemoryAid" && LOW_MEMORY){
-            if (arg.data == serverAccessPassword){lowMemoryAidSockets.push(socketObj.id);}
-        }
-
     });
 
 
@@ -153,15 +125,12 @@ io.on("connection", (socketObj)=>{
     | Server Status Commands |
     \*---------    ---------*/
     socketObj.on("getServerStatus", ()=>{
-        send("server", socketObj.id, "serverStatus", {totalClients: activeSockets.length, lowMemory: LOW_MEMORY, totalLowMemoryAidSockets: lowMemoryAidSockets.length});
+        send("server", socketObj.id, "serverStatus", {totalClients: activeSockets.length});
     });
     socketObj.on("getAllActiveSockets", (arg)=>{ // --- REQ {serverAccessPassword: X}
         if ( arg.serverAccessPassword==serverAccessPassword ){
             send("server", socketObj.id, "allActiveSockets", activeSockets);
         }
-    });
-    socketObj.on("getAllLowMemoryAidSockets", ()=>{
-        send("server", socketObj.id, "allLowMemoryAidSockets", lowMemoryAidSockets);
     });
     socketObj.on("getAllGroups", (arg)=>{ // --- REQ {serverAccessPassword: X} (TODO)
         if ( arg.serverAccessPassword==serverAccessPassword ){
@@ -171,11 +140,11 @@ io.on("connection", (socketObj)=>{
         }
     });
     socketObj.on("getAllClientsInGroup", (arg)=>{ // --- REQ {group: X} (TODO)
-        if (arg.group != undefined){send("server", socketObj.id, "allClientsInGroup", {lowMemory: LOW_MEMORY, group: arg.group, clients: groups2Sockets[arg.group]});}
+        if (arg.group != undefined){send("server", socketObj.id, "allClientsInGroup", {group: arg.group, clients: groups2Sockets[arg.group]});}
     });
     socketObj.on("getGroupOfClient", (arg)=>{ // --- REQ {clientID: X} (TODO)
         if ( arg.serverAccessPassword==serverAccessPassword ){
-            if (arg.clientID != undefined){send("server", socketObj.id, "groupOfClient", {lowMemory: LOW_MEMORY,client: arg.clientID, group: sockets2Groups[arg.clientID]});}
+            if (arg.clientID != undefined){send("server", socketObj.id, "groupOfClient", {client: arg.clientID, group: sockets2Groups[arg.clientID]});}
         }
     })
     socketObj.on("clearGroup2Socket", ()=>{
@@ -190,6 +159,5 @@ io.on("connection", (socketObj)=>{
     \*---------    ---------*/
     socketObj.on("sendDataToSpecificClient", (arg)=>{send(socketObj.id, arg.toID, arg.subject, arg.data)}); // --- REQ {toID: X, subject: Y, data: Z}
     socketObj.on("sendDataToAllInGroup", (arg)=>{sendToAllInGroup(socketObj.id, arg.group, arg.subject, arg.data)}); // --- REQ {group: X, subject: Y, data: Z} (TODO)
-    socketObj.on("sendDataToAllLowMemoryAidSockets", (arg)=>{sendToAllLowMemoryAidSockets(socketObj.id, arg.subject, arg.data)}); // --- REQ {subject: X, data: Y}
     socketObj.on("sendDataToAll", (arg)=>{sendToAll(socketObj.id, arg.subject, arg.data)}); // --- REQ {subject: X, data: Y}
 })
